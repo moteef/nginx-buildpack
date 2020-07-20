@@ -6,21 +6,11 @@ mkdir -p "$1/bin/"
 cp "bin/nginx-$STACK" "$1/bin/nginx"
 nginx_version=$(./bin/nginx-$STACK -V 2>&1 | head -1 | awk '{ print $NF }')
 echo "-----> nginx-buildpack: Installed ${nginx_version} to app/bin"
-cp bin/start-nginx "$1/bin/"
-echo '-----> nginx-buildpack: Added start-nginx to app/bin'
 
 mkdir -p "$1/config"
 
-cp config/mime.types "$1/config/"
-echo '-----> nginx-buildpack: Default mime.types copied to app/config/'
-
-echo '-----> nginx-buildpack: Fetching Cloudflare IP ranges'
-./scripts/build_cloudflare_real_ip_config.sh
-echo '-----> nginx-buildpack: Copying Cloudflare IP ranges file'
-cp config/00_real_ip_cloudflare_00.conf $1/config/00_real_ip_cloudflare_00.conf
-echo '-----> nginx-buildpack: Copying Cloudflare IP ranges allow list'
-cp config/00_allow_cloudflare_00.conf $1/config/00_allow_cloudflare_00.conf
-
+echo '-----> nginx-buildpack: running repo-defined prepare script'
+$1/deploy/nginx/prepare_nginx.sh $1
 
 if [[ ! -f $1/config/nginx.conf.erb ]]; then
 	cp config/nginx.conf.erb "$1/config/"
